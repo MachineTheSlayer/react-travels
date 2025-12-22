@@ -1,8 +1,12 @@
 import type { Action, ThunkAction } from "@reduxjs/toolkit"
 import { configureStore } from "@reduxjs/toolkit"
 
+import travelingReducer from "../components/Traveling/store/slices"
+
 export const store = configureStore({
-  reducer: {},
+  reducer: {
+    traveling: travelingReducer,
+  },
 })
 
 export type AppDispatch = typeof store.dispatch

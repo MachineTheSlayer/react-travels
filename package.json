@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.6.1",
+    "antd": "^6.1.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-redux": "^9.2.0"
@@ -47,7 +48,6 @@
     "vite": "^6.2.4",
     "vitest": "^3.1.1"
   },
-
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
       "npx prettier --write",

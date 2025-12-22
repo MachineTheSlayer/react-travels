@@ -1,0 +1,14 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(2px);
+}
+.column {
+    flex-basis: 50%;
+    padding: var(--spacing-large);
+    border: 1px solid var(--color-yellow-darker);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    background-color: #fff;
+}

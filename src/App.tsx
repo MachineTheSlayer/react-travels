@@ -1,5 +1,11 @@
-const App = () => {
-  return <div className="App">App</div>
+import Traveling from "./components/Traveling"
+
+const App: React.FC = () => {
+  return (
+    <div>
+      <Traveling />
+    </div>
+  )
 }
 
 export default App
