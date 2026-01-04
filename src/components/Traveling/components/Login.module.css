@@ -2,13 +2,16 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 800px;
+    height: 800px;
     backdrop-filter: blur(2px);
 }
 .column {
     flex-basis: 50%;
-    padding: var(--spacing-large);
-    border: 1px solid var(--color-yellow-darker);
-    border-radius: var(--border-radius);
+    padding: 30px;
+    border: 1px solid;
+    border-radius: 5px;
     box-shadow: var(--box-shadow);
     background-color: #fff;
+
 }
