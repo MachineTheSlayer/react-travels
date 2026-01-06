@@ -1,4 +1,5 @@
-import Login from "./components/Login"
+import { Route, Routes } from "react-router"
+import Login from "../../containers/LoginPage/LoginPage"
 
 import styles from "./Traveling.module.css"
 
@@ -17,7 +18,9 @@ const Traveling: React.FC = () => {
                     setIsShowModal={setIsShowModal}
                 />
             )} */}
-      <Login />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+      </Routes>
     </div>
   )
 }

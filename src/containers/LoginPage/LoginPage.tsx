@@ -1,13 +1,14 @@
+import { NavLink } from "react-router"
 import { LockOutlined, UserOutlined } from "@ant-design/icons"
 import { Button, Checkbox, Flex, Form, Input } from "antd"
 
-import styles from "./Login.module.css"
+import styles from "./LoginPage.module.css"
 
 /* export interface ILoginProps {
     setIsShowModal: React.Dispatch<React.SetStateAction<boolean>>
 } */
 
-const Login: React.FC = () => {
+const LoginPage: React.FC = () => {
   /* const { setIsShowModal } = props */
 
   /* const handleClose = () => {
@@ -57,7 +58,7 @@ const Login: React.FC = () => {
             >
               Log in
             </Button>
-            or <a href="">Register now!</a>
+            or <NavLink to="/register">Register now!</NavLink>
           </Form.Item>
         </Form>
       </div>
@@ -65,4 +66,4 @@ const Login: React.FC = () => {
   )
 }
 
-export default Login
+export default LoginPage
