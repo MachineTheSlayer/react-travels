@@ -56,7 +56,9 @@ const LoginPage: React.FC = () => {
             >
               Log in
             </Button>
-            or <NavLink to="/register">Register now!</NavLink>
+            <p>
+              or <NavLink to="/register">Register now!</NavLink>
+            </p>
           </Form.Item>
         </Form>
       </div>

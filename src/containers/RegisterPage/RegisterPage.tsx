@@ -57,10 +57,10 @@ const RegisterPage: React.FC = () => {
             >
               Sign Up
             </Button>
+            <p>
+              Already have an account? <NavLink to="/login">Sign in</NavLink>
+            </p>
           </Form.Item>
-          <p>
-            Already have an account? <NavLink to="/login">Sign in</NavLink>
-          </p>
         </Form>
       </div>
     </div>
