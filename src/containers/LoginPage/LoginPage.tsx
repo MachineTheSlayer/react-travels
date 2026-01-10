@@ -1,6 +1,6 @@
 import { NavLink } from "react-router"
-import { LockOutlined, UserOutlined } from "@ant-design/icons"
 import { Button, Checkbox, Flex, Form, Input } from "antd"
+import { LockOutlined, UserOutlined } from "@ant-design/icons"
 
 import styles from "./LoginPage.module.css"
 
@@ -11,13 +11,11 @@ import styles from "./LoginPage.module.css"
 const LoginPage: React.FC = () => {
   /* const { setIsShowModal } = props */
 
-  /* const handleClose = () => {
-        setIsShowModal(false)
-    } */
-
   return (
     <div className={styles.container}>
+      <h1 className={styles.title}>TRAVELS🌎</h1>
       <div className={styles.column}>
+        <h2 className={styles.subtitle}>Login</h2>
         <Form
           name="login"
           initialValues={{ remember: true }}
