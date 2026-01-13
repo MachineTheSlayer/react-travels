@@ -24,8 +24,13 @@ const LoginPage: React.FC = () => {
           <Form.Item
             name="username"
             rules={[{ required: true, message: "Please input your Username!" }]}
+            style={{ maxWidth: 226 }}
           >
-            <Input prefix={<UserOutlined />} placeholder="Username" />
+            <Input
+              prefix={<UserOutlined />}
+              placeholder="Username"
+              style={{ width: 226 }}
+            />
           </Form.Item>
           <Form.Item
             name="password"

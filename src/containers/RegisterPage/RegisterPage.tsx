@@ -18,6 +18,7 @@ const RegisterPage: React.FC = () => {
           <Form.Item
             name="username"
             rules={[{ required: true, message: "Please input your Username!" }]}
+            style={{ width: 226 }}
           >
             <Input prefix={<UserOutlined />} placeholder="Username" />
           </Form.Item>
