@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router"
 import LoginPage from "./containers/LoginPage"
 import HomePage from "./containers/HomePage"
 import RegisterPage from "./containers/RegisterPage"
+import ForgotPasswordPage from "./containers/ForgotPasswordPage"
 
 const App: React.FC = () => {
   return (
@@ -10,6 +11,7 @@ const App: React.FC = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
       </Routes>
     </div>
   )

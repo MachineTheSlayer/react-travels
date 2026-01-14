@@ -47,7 +47,7 @@ const LoginPage: React.FC = () => {
               <Form.Item name="remember" valuePropName="checked" noStyle>
                 <Checkbox>Remember me</Checkbox>
               </Form.Item>
-              <a href="">Forgot password</a>
+              <NavLink to="/forgotpassword">Forgot password</NavLink>
             </Flex>
           </Form.Item>
 
