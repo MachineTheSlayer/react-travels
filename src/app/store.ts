@@ -1,11 +1,11 @@
 import type { Action, ThunkAction } from "@reduxjs/toolkit"
 import { configureStore } from "@reduxjs/toolkit"
 
-import travelingReducer from "../components/Traveling/store/slices"
+import userReduser from "../components/Traveling/store/slices"
 
 export const store = configureStore({
   reducer: {
-    traveling: travelingReducer,
+    user: userReduser,
   },
 })
 

@@ -1,20 +1,29 @@
 import { createSlice } from "@reduxjs/toolkit"
 
-import type { ITravelngState } from "./types"
+import type { IUserState, IUserAction } from "./types"
 
-export const initialState: ITravelngState = {
-  currentStep: 0,
+export const initialState: IUserState = {
+  email: null,
+  token: null,
+  id: null,
 }
 
-export const travelingSlice = createSlice({
-  name: "traveling",
+export const userSlice = createSlice({
+  name: "user",
   initialState,
   reducers: {
-    setCurrentStep: state => {
-      state.currentStep += 1
+    setUser(state, action: IUserAction) {
+      state.email = action.payload.email
+      state.token = action.payload.token
+      state.id = action.payload.id
+    },
+    removeUser(state) {
+      state.email = null
+      state.token = null
+      state.id = null
     },
   },
 })
 
-export const { setCurrentStep } = travelingSlice.actions
-export default travelingSlice.reducer
+export const { setUser, removeUser } = userSlice.actions
+export default userSlice.reducer
