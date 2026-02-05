@@ -14,16 +14,17 @@ const Register: React.FC = () => {
   const onFinish = async (values: {
     email: string
     password: string
-    confirmPassword: string
+    passwordConfirm: string
     displayName: string
   }) => {
-    if (values.password !== values.confirmPassword) {
+    if (values.password !== values.passwordConfirm) {
       setError("Пароли не совпадают")
       return
     }
 
     try {
       setError(null)
+      console.log(values)
       await dispatch(
         register({
           email: values.email,
@@ -34,7 +35,8 @@ const Register: React.FC = () => {
       void navigate("/")
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setError(err.message || "Ошибка регистрации"); return;
+        setError(err.message || "Ошибка регистрации")
+        return
       } else {
         console.log("Произошла неизвестная ошибка", error)
       }
@@ -51,13 +53,20 @@ const Register: React.FC = () => {
             title={error}
             type="error"
             showIcon
-            style={{ marginBottom: 16 }}
+            style={{ marginBottom: 8 }}
           />
         )}
         <Form
           name="register"
           initialValues={{ remember: true }}
-          onFinish={void onFinish}
+          onFinish={(values: {
+            email: string
+            password: string
+            passwordConfirm: string
+            displayName: string
+          }) => {
+            onFinish(values).catch(console.error)
+          }}
           style={{ maxWidth: 360 }}
         >
           <Form.Item
