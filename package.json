@@ -17,6 +17,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@iminside/react-yandex-maps": "^1.2.7",
     "@reduxjs/toolkit": "^2.6.1",
     "antd": "^6.1.1",
     "firebase": "^12.7.0",
