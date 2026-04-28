@@ -1,4 +1,4 @@
-import type { PayloadAction } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit"
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 import {
   createUserWithEmailAndPassword,
@@ -13,12 +13,13 @@ import type {
   RegisterCredentials,
   AuthState,
 } from "./types"
+import { cacheUser, clearUserCache } from "../../../utils/cacheStorage"
 
 export const initialState: AuthState = {
   user: null,
-  loading: false,
+  loading: true,
   error: null,
-  isAuthenticated: false,
+  isInitialized: false,
 }
 
 export const login = createAsyncThunk(
@@ -30,18 +31,20 @@ export const login = createAsyncThunk(
         credentials.email,
         credentials.password,
       )
-      return {
+      const user: User = {
         uid: userCredential.user.uid,
         email: userCredential.user.email,
         displayName: userCredential.user.displayName,
         photoURL: userCredential.user.photoURL,
       }
+      cacheUser(user)
+      return user
     } catch (error: unknown) {
       if (error instanceof Error) {
         return rejectWithValue(error.message)
-      } else {
-        console.log("Произошла неизвестная ошибка", error)
       }
+      console.log("Произошла неизвестная ошибка", error)
+      return rejectWithValue("Неизвестная ошибка входа")
     }
   },
 )
@@ -61,19 +64,20 @@ export const register = createAsyncThunk(
           displayName: credentials.displayName,
         })
       }
-
-      return {
+      const user: User = {
         uid: userCredential.user.uid,
         email: userCredential.user.email,
         displayName: credentials.displayName ?? null,
         photoURL: userCredential.user.photoURL,
       }
+      cacheUser(user)
+      return user
     } catch (error: unknown) {
       if (error instanceof Error) {
         return rejectWithValue(error.message)
-      } else {
-        console.log("Произошла неизвестная ошибка", error)
       }
+      console.log("Произошла неизвестная ошибка", error)
+      return rejectWithValue("Неизвестная ошибка входа")
     }
   },
 )
@@ -83,6 +87,7 @@ export const logout = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       await signOut(auth)
+      clearUserCache()
     } catch (error: unknown) {
       if (error instanceof Error) {
         return rejectWithValue(error.message)
@@ -99,7 +104,14 @@ export const authSlice = createSlice({
   reducers: {
     setUser: (state, action: PayloadAction<User | null>) => {
       state.user = action.payload
-      state.isAuthenticated = !!action.payload
+    },
+    finishInitialization: (
+      state,
+      action: PayloadAction<{ user: User | null }>,
+    ) => {
+      state.user = action.payload.user
+      state.loading = false
+      state.isInitialized = true
       state.error = null
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
@@ -117,12 +129,13 @@ export const authSlice = createSlice({
         state.error = null
       })
       .addCase(login.fulfilled, (state, action) => {
-        state.loading = false
         state.user = action.payload
-        state.isAuthenticated = true
+        state.loading = false
+        state.isInitialized = true
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false
+        state.isInitialized = true
         state.error = action.payload as string
       })
       // Register
@@ -131,12 +144,13 @@ export const authSlice = createSlice({
         state.error = null
       })
       .addCase(register.fulfilled, (state, action) => {
-        state.loading = false
         state.user = action.payload
-        state.isAuthenticated = true
+        state.loading = false
+        state.isInitialized = true
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false
+        state.isInitialized = true
         state.error = action.payload as string
       })
       // Logout
@@ -144,16 +158,18 @@ export const authSlice = createSlice({
         state.loading = true
       })
       .addCase(logout.fulfilled, state => {
-        state.loading = false
         state.user = null
-        state.isAuthenticated = false
+        state.loading = false
+        state.isInitialized = true
       })
       .addCase(logout.rejected, (state, action) => {
         state.loading = false
+        state.isInitialized = true
         state.error = action.payload as string
       })
   },
 })
 
-export const { setUser, setLoading, clearError } = authSlice.actions
+export const { setUser, finishInitialization, setLoading, clearError } =
+  authSlice.actions
 export default authSlice.reducer

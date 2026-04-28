@@ -10,9 +10,9 @@ export type IProtectedRouteProps = {
 }
 
 const ProtectedRoute: React.FC<IProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, isInitialized, loading } = useAuth()
 
-  if (loading) {
+  if (!isInitialized || loading) {
     return (
       <div
         style={{
@@ -28,7 +28,7 @@ const ProtectedRoute: React.FC<IProtectedRouteProps> = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" />
+    return <Navigate to="/login" replace />
   }
 
   return <>{children}</>

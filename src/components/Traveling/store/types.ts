@@ -11,7 +11,7 @@ export type AuthState = {
   user: User | null | undefined
   loading: boolean
   error: string | null
-  isAuthenticated: boolean
+  isInitialized: boolean
 }
 
 export type LoginCredentials = {

@@ -10,7 +10,6 @@ const AppInitializer: React.FC<IAppInitializerProps> = ({ children }) => {
   const { isInitialized } = useAuth()
 
   if (!isInitialized) {
-    console.log("AppInitializer", isInitialized)
     return (
       <div
         style={{
