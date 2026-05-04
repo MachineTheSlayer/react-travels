@@ -2,6 +2,7 @@ import type { PayloadAction } from "@reduxjs/toolkit"
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 import {
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
@@ -94,6 +95,21 @@ export const logout = createAsyncThunk(
       } else {
         console.log("Произошла неизвестная ошибка", error)
       }
+    }
+  },
+)
+
+export const resetPassword = createAsyncThunk(
+  "auth/resetPassword",
+  async (email: string, { rejectWithValue }) => {
+    try {
+      await sendPasswordResetEmail(auth, email)
+      return email
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message)
+      }
+      return rejectWithValue("Неизвестная ошибка при сбросе пароля")
     }
   },
 )
