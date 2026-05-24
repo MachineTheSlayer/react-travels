@@ -1,9 +1,11 @@
+import type { User } from "../components/Traveling/store/types"
+
 // Ключ для хранения кеша пользователя в localStorage
 const USER_CACHE_KEY = "app_user_cache_v1"
 
 export type CachedUser = {
   uid: string
-  email: string
+  email: string | null
   displayName: string | null
   photoURL: string | null
   timestamp: number
@@ -13,16 +15,20 @@ export type CachedUser = {
 const MAX_CACHE_AGE_MS = 30 * 24 * 60 * 60 * 1000
 
 // Сохранить пользователя в кеш
-export const cacheUser = (user: CachedUser | null): void => {
+export const cacheUser = (user: User | null): void => {
   try {
     if (user) {
       const cached: CachedUser = {
-        ...user,
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
         timestamp: Date.now(),
       }
       localStorage.setItem(USER_CACHE_KEY, JSON.stringify(cached))
+    } else {
+      localStorage.removeItem(USER_CACHE_KEY)
     }
-    localStorage.removeItem(USER_CACHE_KEY)
   } catch (error) {
     console.error("Failed to cache user:", error)
   }
@@ -48,6 +54,6 @@ export const getCachedUser = (): CachedUser | null => {
 }
 
 // Очистить кеш пользователя
-export const clearCache = (): void => {
+export const clearUserCache = (): void => {
   localStorage.removeItem(USER_CACHE_KEY)
 }
