@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import type { TypedUseSelectorHook } from "react-redux"
-import type { User as FirebaseUser } from "firebase/auth";
+import type { User as FirebaseUser } from "firebase/auth"
 import { onAuthStateChanged } from "firebase/auth"
 import { auth } from "../utils/firebase"
 import {
@@ -37,11 +37,21 @@ export const useAuth = () => {
       (firebaseUser: FirebaseUser | null) => {
         let finalUser = null
         if (firebaseUser) {
-          finalUser = {
-            uid: firebaseUser.uid,
-            email: firebaseUser.email ?? "",
-            displayName: firebaseUser.displayName,
-            photoURL: firebaseUser.photoURL,
+          const cached = getCachedUser()
+          if (cached && cached.uid === firebaseUser.uid) {
+            finalUser = {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email ?? cached.email,
+              displayName: firebaseUser.displayName ?? cached.displayName,
+              photoURL: cached.photoURL ?? firebaseUser.photoURL,
+            }
+          } else {
+            finalUser = {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email ?? "",
+              displayName: firebaseUser.displayName,
+              photoURL: firebaseUser.photoURL,
+            }
           }
           cacheUser(finalUser)
         } else {
@@ -51,7 +61,9 @@ export const useAuth = () => {
       },
     )
 
-    return () => { unsubscribe(); }
+    return () => {
+      unsubscribe()
+    }
   }, [dispatch])
 
   return { user, loading, isInitialized, isAuthenticated: !!user }
