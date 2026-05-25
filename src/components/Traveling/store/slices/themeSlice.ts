@@ -1,11 +1,11 @@
-import type { PayloadAction } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit"
 import { createSlice } from "@reduxjs/toolkit"
 import type { ThemeState, ThemeMode } from "../types"
 
 // Функция для получения начальной темы из localStorage
 const getInitialTheme = (): ThemeMode => {
-  const savedTheme = localStorage.getItem("theme") as ThemeMode
-  if (savedTheme === "light") {
+  const savedTheme = localStorage.getItem("theme")
+  if (savedTheme === "light" || savedTheme === "dark") {
     return savedTheme
   }
 
