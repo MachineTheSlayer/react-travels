@@ -1,4 +1,4 @@
-import type { PayloadAction } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit"
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import type {
   CityState,
@@ -18,6 +18,16 @@ const initialState: CityState = {
   suggestResults: [],
   isLoading: false,
   isSuggestLoading: false,
+}
+
+type OpenMeteoResponse = {
+  current_weather: {
+    temperature: number
+    windspeed: number
+    weathercode: number
+    is_day: number
+    time: string
+  }
 }
 
 // Загрузка истории из localStorage
@@ -115,6 +125,51 @@ export const getCoordinatesForSuggestion = createAsyncThunk(
       console.error("Error getting coordinates:", error)
       return null
     }
+  },
+)
+
+export const fetchWeatherForCity = createAsyncThunk(
+  "city/fetchWeatherForCity",
+  async ({
+    coordinates,
+    cityName,
+  }: {
+    coordinates: [number, number]
+    cityName: string
+  }) => {
+    const [lat, lon] = coordinates
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${String(lat)}&longitude=${String(lon)}&current_weather=true&timezone=auto`
+    const response = await fetch(url)
+    if (!response.ok)
+      throw new Error(`Weather API error: ${String(response.status)}`)
+    const data = (await response.json()) as OpenMeteoResponse
+    return { cityName, weather: data.current_weather, updatedAt: Date.now() }
+  },
+)
+
+export const refreshOutdatedWeather = createAsyncThunk(
+  "city/refreshOutdatedWeather",
+  async (_, { getState, dispatch }) => {
+    const state = getState() as { city: CityState }
+    const now = Date.now()
+    const oneHour = 60 * 60 * 1000
+    const citiesToUpdate = state.city.savedCities.filter(city => {
+      return (
+        !city.weather ||
+        !city.weatherUpdatedAt ||
+        now - city.weatherUpdatedAt > oneHour
+      )
+    })
+    await Promise.allSettled(
+      citiesToUpdate.map(city =>
+        dispatch(
+          fetchWeatherForCity({
+            coordinates: city.coordinates,
+            cityName: city.name,
+          }),
+        ),
+      ),
+    )
   },
 )
 
@@ -231,6 +286,20 @@ const citySlice = createSlice({
       })
       .addCase(getCoordinatesForSuggestion.rejected, state => {
         state.isLoading = false
+      })
+      .addCase(fetchWeatherForCity.fulfilled, (state, action) => {
+        const { cityName, weather, updatedAt } = action.payload
+        const city = state.savedCities.find(city => city.name === cityName)
+        if (city) {
+          city.weather = weather
+          city.weatherUpdatedAt = updatedAt
+        }
+      })
+      .addCase(fetchWeatherForCity.rejected, (state, action) => {
+        console.error(
+          `Failed to fetch weather for ${action.meta.arg.cityName}:`,
+          action.error,
+        )
       })
   },
 })

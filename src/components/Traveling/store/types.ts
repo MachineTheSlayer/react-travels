@@ -23,6 +23,14 @@ export type RegisterCredentials = {
   displayName?: string
 } & LoginCredentials
 
+export type WeatherData = {
+  temperature: number
+  windspeed: number
+  weathercode: number
+  is_day: number
+  time: string
+}
+
 export type CityData = {
   id?: string
   name: string
@@ -33,6 +41,8 @@ export type CityData = {
   dateRange?: [string, string]
   places?: string[]
   rating?: number
+  weather?: WeatherData
+  weatherUpdatedAt?: number
 }
 
 export type SuggestionItem = {

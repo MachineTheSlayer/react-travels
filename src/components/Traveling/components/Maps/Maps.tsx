@@ -37,6 +37,44 @@ const escapeHtml = (str: string) => {
     .replace(/'/g, "&#39;")
 }
 
+// Функция для преобразования weathercode (WMO) в читаемый текст и иконку
+const getWeatherDescription = (
+  code: number,
+): { text: string; icon: string } => {
+  // Коды WMO (https://open-meteo.com/en/docs)
+  const weatherMap: Record<number, { text: string; icon: string }> = {
+    0: { text: "Ясно", icon: "☀️" },
+    1: { text: "В основном ясно", icon: "🌤️" },
+    2: { text: "Переменная облачность", icon: "⛅" },
+    3: { text: "Пасмурно", icon: "☁️" },
+    45: { text: "Туман", icon: "🌫️" },
+    48: { text: "Туман с изморозью", icon: "🌫️" },
+    51: { text: "Морось слабая", icon: "🌧️" },
+    53: { text: "Морось умеренная", icon: "🌧️" },
+    55: { text: "Морось густая", icon: "🌧️" },
+    56: { text: "Ледяная морось слабая", icon: "🌨️" },
+    57: { text: "Ледяная морось густая", icon: "🌨️" },
+    61: { text: "Дождь слабый", icon: "🌦️" },
+    63: { text: "Дождь умеренный", icon: "🌧️" },
+    65: { text: "Дождь сильный", icon: "🌧️" },
+    66: { text: "Ледяной дождь слабый", icon: "🌨️" },
+    67: { text: "Ледяной дождь сильный", icon: "🌨️" },
+    71: { text: "Снег слабый", icon: "❄️" },
+    73: { text: "Снег умеренный", icon: "❄️" },
+    75: { text: "Снег сильный", icon: "❄️" },
+    77: { text: "Снежные зёрна", icon: "❄️" },
+    80: { text: "Ливень слабый", icon: "🌧️" },
+    81: { text: "Ливень умеренный", icon: "🌧️" },
+    82: { text: "Ливень сильный", icon: "🌧️" },
+    85: { text: "Снегопад слабый", icon: "❄️" },
+    86: { text: "Снегопад сильный", icon: "❄️" },
+    95: { text: "Гроза", icon: "⛈️" },
+    96: { text: "Гроза с градом слабым", icon: "⛈️" },
+    99: { text: "Гроза с градом сильным", icon: "⛈️" },
+  }
+  return weatherMap[code] || { text: "Неизвестно", icon: "❓" }
+}
+
 const Maps: React.FC = () => {
   const dispatch = useAppDispatch()
   const mapContainerRef = useRef<HTMLDivElement>(null)
@@ -61,6 +99,21 @@ const Maps: React.FC = () => {
     const ratingStars = city.rating
       ? "★".repeat(city.rating) + "☆".repeat(5 - city.rating)
       : ""
+
+    let weatherBlock =
+      '<div class="balloonSection">☁️ Погода: загружается...</div>'
+    if (city.weather) {
+      const { text, icon } = getWeatherDescription(city.weather.weathercode)
+      weatherBlock = `
+        <div class="${styles.balloonSection}">
+          <div class="${styles.balloonLabel}">☁️ Погода</div>
+          <div>${icon} ${text}</div>
+          <div>🌡️ Температура: ${city.weather.temperature.toFixed(1)}°C</div>
+          <div>💨 Ветер: ${city.weather.windspeed} км/ч</div>
+          <div>🌓 ${city.weather.is_day === 1 ? "День" : "Ночь"}</div>
+        </div>
+      `
+    }
 
     return `
       <div class="${styles.balloonContent}">
@@ -89,6 +142,7 @@ const Maps: React.FC = () => {
           <div class="${styles.balloonLabel}">🏢 Адрес:</div>
           <div>${fullAddress}</div>
         </div>
+        ${weatherBlock}
         <div class="${styles.balloonFooter}">
           <button onclick="window.removePlacemark('${city.name.replace(/'/g, "\\'")}')">✕ Удалить метку</button>
         </div>
