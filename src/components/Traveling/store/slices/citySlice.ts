@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { PayloadAction } from "@reduxjs/toolkit"
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import type {
@@ -29,6 +30,10 @@ type OpenMeteoResponse = {
     time: string
   }
 }
+
+// const AVIA_API_TOKEN = import.meta.env.VITE_REACT_AVIASALES_API_KEY as string
+
+let citiesCache: Array<{ name: string; code: string }> | null = null
 
 // Загрузка истории из localStorage
 export const loadHistoryFromStorage = createAsyncThunk(
@@ -73,7 +78,7 @@ export const getSuggestions = createAsyncThunk(
       if (Array.isArray(result)) {
         suggestions = result
       }
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+       
       else if (result && "results" in result && Array.isArray(result.results)) {
         suggestions = result.results
       }
@@ -105,7 +110,7 @@ export const getCoordinatesForSuggestion = createAsyncThunk(
       })
 
       const firstGeoObject = result.geoObjects.get(0)
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+       
       if (!firstGeoObject) return null
 
       const localities = firstGeoObject.getLocalities()
@@ -170,6 +175,65 @@ export const refreshOutdatedWeather = createAsyncThunk(
         ),
       ),
     )
+  },
+)
+
+export const getIataForCity = async (
+  cityName: string,
+): Promise<string | null> => {
+  try {
+    let cache = citiesCache
+    if (!cache) {
+      const response = await fetch("/cities.json")
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = (await response.json()) as Array<{
+        name: string
+        code: string
+      }>
+      if (!Array.isArray(data)) {
+        console.error("Полученные данные не являются массивом")
+        return null
+      }
+      cache = data
+      citiesCache = cache
+    }
+    const normalized = cityName.toLowerCase().trim()
+    let found = cache.find(city => city.name.toLowerCase() === normalized)
+    if (found) return found.code
+    found = cache.find(city => city.name.toLowerCase().includes(normalized))
+    return found ? found.code : null
+  } catch (error) {
+    console.error("Ошибка при получении IATA-кода:", error)
+    return null
+  }
+}
+
+export const fetchFlightsByRoute = createAsyncThunk(
+  "city/fetchFlightsByRoute",
+  async ({
+    originIata,
+    destinationIata,
+  }: {
+    originIata: string
+    destinationIata: string
+  }) => {
+    const token = import.meta.env.VITE_REACT_AVIASALES_API_KEY
+    const url = `/travelpayouts/aviasales/v3/prices_for_dates?origin=${originIata}&destination=${destinationIata}&currency=rub&limit=5&unique=true&token=${token}`
+    const response = await fetch(url)
+    if (!response.ok) throw new Error(`API error: ${response.status}`)
+    const data = await response.json()
+    const flightsData = data.data || []
+    const flights = flightsData.map((item: any) => ({
+      price: item.price,
+      airline: item.airline,
+      flightNumber: item.flight_number,
+      departureAt: item.departure_at,
+      returnAt: item.return_at,
+      bookingLink: item.link.startsWith("http")
+        ? item.link
+        : `https://www.aviasales.com${item.link}`,
+    }))
+    return { originIata, destinationIata, flights }
   },
 )
 
@@ -257,6 +321,17 @@ const citySlice = createSlice({
     setSavedCities: (state, action: PayloadAction<CityData[]>) => {
       state.savedCities = action.payload
     },
+
+    updateCityIata: (
+      state,
+      action: PayloadAction<{ cityName: string; iata: string }>,
+    ) => {
+      const { cityName, iata } = action.payload
+      const city = state.savedCities.find(c => c.name === cityName)
+      if (city) {
+        city.iata = iata
+      }
+    },
   },
   extraReducers: builder => {
     builder
@@ -301,6 +376,14 @@ const citySlice = createSlice({
           action.error,
         )
       })
+      .addCase(fetchFlightsByRoute.fulfilled, (state, action) => {
+        const { destinationIata, flights } = action.payload
+        const city = state.savedCities.find(c => c.iata === destinationIata)
+        if (city) {
+          city.cheapFlights = flights
+          city.flightsUpdatedAt = Date.now()
+        }
+      })
   },
 })
 
@@ -314,6 +397,7 @@ export const {
   clearHistory,
   clearSuggestions,
   setSavedCities,
+  updateCityIata,
 } = citySlice.actions
 
 export default citySlice.reducer

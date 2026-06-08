@@ -8,7 +8,13 @@ export default defineConfig({
   plugins: [react()],
 
   server: {
-    open: true,
+    proxy: {
+      "/travelpayouts": {
+        target: "https://api.travelpayouts.com",
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/travelpayouts/, ""),
+      },
+    },
   },
 
   test: {

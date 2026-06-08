@@ -3,7 +3,11 @@ import type React from "react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useAppDispatch, useAppSelector } from "../../../../app/hooks"
 import { setApiLoaded } from "../../store/slices/mapSlice"
-import { removeCityFromMap } from "../../store/slices/citySlice"
+import {
+  fetchFlightsByRoute,
+  getIataForCity,
+  removeCityFromMap,
+} from "../../store/slices/citySlice"
 import {
   CityData,
   YandexMapsApi,
@@ -115,6 +119,33 @@ const Maps: React.FC = () => {
       `
     }
 
+    // Статическое отображение билетов (если есть)
+    const flightsBlock =
+      city.cheapFlights && city.cheapFlights.length > 0
+        ? `
+    <div class="${styles.balloonSection}">
+      <div class="${styles.balloonLabel}">✈️ Билеты</div>
+        <div style="margin-bottom: 8px;">
+          <a href="https://www.aviasales.ru/?params=MOW1" target="_blank" rel="noopener noreferrer">Найти билеты на Aviasales</a>
+        </div>
+        <!--
+       ${city.cheapFlights
+         .map(
+           flight => `
+        <div style="border-bottom:1px solid #eee; margin:4px 0; padding:4px;">
+          🛫 ${escapeHtml(flight.airline)} (${flight.flightNumber})<br/>
+          💰 ${flight.price} ₽<br/>
+          📅 ${new Date(flight.departureAt).toLocaleDateString()}<br/>
+          ${flight.returnAt ? `🔄 Обратно: ${new Date(flight.returnAt).toLocaleDateString()}<br/>` : ""}
+          <a href="${escapeHtml(flight.bookingLink)}" target="_blank" rel="noopener noreferrer">Забронировать</a>
+        </div>
+      `,
+         )
+         .join("")}-->
+    </div>
+  `
+        : '<div class="balloonSection">✈️ Билеты не найдены</div>'
+
     return `
       <div class="${styles.balloonContent}">
         <h3 class="${styles.balloonTitle}">
@@ -143,8 +174,9 @@ const Maps: React.FC = () => {
           <div>${fullAddress}</div>
         </div>
         ${weatherBlock}
+        ${flightsBlock} 
         <div class="${styles.balloonFooter}">
-          <button onclick="window.removePlacemark('${city.name.replace(/'/g, "\\'")}')">✕ Удалить метку</button>
+          <button class="${styles.deleteButton}" onclick="window.removePlacemark('${city.name.replace(/'/g, "\\'")}')">✕ Удалить метку</button>
         </div>
       </div>
     `
@@ -152,36 +184,27 @@ const Maps: React.FC = () => {
 
   // Функция добавления меток (вынесена, чтобы использовать и в initMap, и в эффекте)
   const updatePlacemarks = useCallback(() => {
-    console.log(
-      "updatePlacemarks called, savedCities length:",
-      savedCities.length,
-      "map:",
-      !!mapInstanceRef.current,
-    )
     const map = mapInstanceRef.current
     const ymaps = window.ymaps as YandexMapsApi
-    if (!map || !ymaps) {
-      console.log("updatePlacemarks called, map not ready")
-      return
-    }
-    console.log(
-      "updatePlacemarks called, savedCities length:",
-      savedCities.length,
-    )
-    // Удаляем старые кастомные метки
+    if (!map || !ymaps) return
+
+    // Удаляем старые метки
     map.geoObjects.each((obj: YandexPlacemark) => {
       if (obj.properties?.get?.("type") === "custom") {
         map.geoObjects.remove(obj)
       }
     })
 
+    // Очищаем глобальный Map
+    if (!window.cityPlacemarks) window.cityPlacemarks = new Map()
+    else window.cityPlacemarks.clear()
+
     savedCities.forEach(city => {
       let preset = "islands#blueDotIconWithCaption"
-      if (city.tripType === "planned") {
+      if (city.tripType === "planned")
         preset = "islands#greenDotIconWithCaption"
-      } else if (city.tripType === "past") {
+      else if (city.tripType === "past")
         preset = "islands#redDotIconWithCaption"
-      }
 
       const placemark = new ymaps.Placemark(
         city.coordinates,
@@ -190,18 +213,22 @@ const Maps: React.FC = () => {
           hintContent: city.name,
           iconCaption: city.name,
           type: "custom",
+          iata: city.iata || "",
         },
         { preset, openBalloonOnClick: true },
       ) as unknown as YandexPlacemark
 
+      // Сохраняем в глобальный Map
+      window.cityPlacemarks.set(city.name, placemark)
       map.geoObjects.add(placemark)
     })
   }, [savedCities, generateBalloonContent])
 
   // Эффект для обновления меток при изменении savedCities
   useEffect(() => {
-    console.log("🔄 Добавление меток, savedCities:", savedCities.length)
-    updatePlacemarks()
+    if (mapInstanceRef.current && window.ymaps) {
+      updatePlacemarks()
+    }
   }, [updatePlacemarks])
 
   const initMap = useCallback(() => {
@@ -225,6 +252,16 @@ const Maps: React.FC = () => {
         "routeButtonControl",
       ],
     }) as unknown as YandexMapInstance
+
+    const style = document.createElement("style")
+    style.textContent = `
+      [class*="balloon__layout"],
+      [class*="balloon__panel"] {
+        border-radius: 25px !important;
+        overflow: hidden !important;
+      }
+    `
+    document.head.appendChild(style)
 
     map.behaviors.disable("scrollZoom")
     mapInstanceRef.current = map
@@ -319,7 +356,7 @@ const Maps: React.FC = () => {
   }, [selectedCity])
 
   // Добавление меток на карту
-  useEffect(() => {
+  /*   useEffect(() => {
     console.log("🔄 Добавление меток, savedCities:", savedCities)
     const ymaps = window.ymaps as YandexMapsApi
     const mapInstance = mapInstanceRef.current
@@ -348,13 +385,14 @@ const Maps: React.FC = () => {
           hintContent: city.name,
           iconCaption: city.name,
           type: "custom",
+          iata: city.iata || '',
         },
         { preset, openBalloonOnClick: true },
       ) as unknown as YandexPlacemark
-
+      window.cityPlacemarks.set(city.name, placemark);
       mapInstance.geoObjects.add(placemark)
     })
-  }, [savedCities])
+  }, [savedCities]) */
 
   // Обработчик удаления метки через глобальное событие
   useEffect(() => {
@@ -368,6 +406,70 @@ const Maps: React.FC = () => {
       window.removeEventListener("removePlacemark", handleRemovePlacemark)
   }, [dispatch])
 
+  // Глобальные инициализации (один раз, можно использовать useEffect с пустыми зависимостями)
+  /* useEffect(() => {
+  if (typeof window === 'undefined') return;
+
+  if (!window.cityPlacemarks) {
+    window.cityPlacemarks = new Map();
+  }
+
+  if (!window.showFlightInput) {
+    window.showFlightInput = (cityName: string) => {
+      const flightSearchDiv = document.getElementById(`flight-search-${cityName}`);
+      if (flightSearchDiv) flightSearchDiv.style.display = 'block';
+    };
+  }
+
+  if (!window.searchFlights) {
+    window.searchFlights = async (cityName: string) => {
+      const input = document.getElementById(`departure-city-${cityName}`) as HTMLInputElement;
+      const departureCity = input?.value.trim();
+      if (!departureCity) {
+        alert('Введите город вылета');
+        return;
+      }
+      const departureIata = await getIataForCity(departureCity);
+      if (!departureIata) {
+        alert('Не удалось определить IATA код города вылета');
+        return;
+      }
+      const placemark = window.cityPlacemarks.get(cityName);
+      if (!placemark) {
+        console.warn(`Placemark for ${cityName} not found`);
+        return;
+      }
+      // Находим город назначения из Redux-состояния (лучше передать через сохранённые данные)
+      // Для простоты можно использовать глобальную ссылку на dispatch и получить IATA из placemark.properties
+      const destinationIata = placemark.properties.get('iata'); // нужно сохранить IATA в свойства placemark
+      if (!destinationIata) {
+        alert('Для города назначения нет IATA кода');
+        return;
+      }
+      const resultAction = await dispatch(fetchFlightsByRoute({ originIata: departureIata, destinationIata }));
+      if (fetchFlightsByRoute.fulfilled.match(resultAction)) {
+        const flights = resultAction.payload.flights;
+        console.log('Flights received:', flights);
+        const resultsDiv = document.getElementById(`flight-results-${cityName}`);
+        if (resultsDiv) {
+          if (!flights || flights.length === 0) {
+            resultsDiv.innerHTML = '<p>Билеты не найдены</p>';
+          } else {
+            resultsDiv.innerHTML = flights.map(f => `
+              <div style="border-bottom:1px solid #ccc; margin:5px 0; padding:5px;">
+                🛫 ${f.airline} | ${f.price} ₽<br/>
+                Дата вылета: ${new Date(f.departureAt).toLocaleDateString()}<br/>
+                <a href="${f.bookingLink}" target="_blank" rel="noopener noreferrer">Забронировать</a>
+              </div>
+            `).join('');
+          }
+          resultsDiv.style.display = 'block';
+        } else {console.error('Results div not found for', cityName);}
+      }
+    };
+  }
+}, [dispatch]); // dispatch передаём в зависимости, чтобы функция обновилась, но инициализация произойдёт один раз
+ */
   return (
     <div
       ref={mapContainerRef}
