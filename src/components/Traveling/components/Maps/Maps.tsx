@@ -120,31 +120,32 @@ const Maps: React.FC = () => {
     }
 
     // Статическое отображение билетов (если есть)
-    const flightsBlock =
-      city.cheapFlights && city.cheapFlights.length > 0
-        ? `
-    <div class="${styles.balloonSection}">
-      <div class="${styles.balloonLabel}">✈️ Билеты</div>
-        <div style="margin-bottom: 8px;">
-          <a href="https://www.aviasales.ru/?params=MOW1" target="_blank" rel="noopener noreferrer">Найти билеты на Aviasales</a>
-        </div>
-        <!--
-       ${city.cheapFlights
-         .map(
-           flight => `
-        <div style="border-bottom:1px solid #eee; margin:4px 0; padding:4px;">
-          🛫 ${escapeHtml(flight.airline)} (${flight.flightNumber})<br/>
-          💰 ${flight.price} ₽<br/>
-          📅 ${new Date(flight.departureAt).toLocaleDateString()}<br/>
-          ${flight.returnAt ? `🔄 Обратно: ${new Date(flight.returnAt).toLocaleDateString()}<br/>` : ""}
-          <a href="${escapeHtml(flight.bookingLink)}" target="_blank" rel="noopener noreferrer">Забронировать</a>
-        </div>
-      `,
-         )
-         .join("")}-->
+    const flightsBlock = `
+  <div class="${styles.balloonSection}">
+    <div class="${styles.balloonLabel}">✈️ Билеты</div>
+    <div style="margin-bottom: 8px;">
+      <a href="https://www.aviasales.ru/?params=MOW1" target="_blank" rel="noopener noreferrer">Найти билеты на Aviasales</a>
     </div>
-  `
-        : '<div class="balloonSection">✈️ Билеты не найдены</div>'
+    <!--
+    ${
+      city.cheapFlights && city.cheapFlights.length > 0
+        ? city.cheapFlights
+            .map(
+              flight => `
+            <div style="border-bottom:1px solid #eee; margin:4px 0; padding:4px;">
+              🛫 ${escapeHtml(flight.airline)} (${flight.flightNumber})<br/>
+              💰 ${flight.price} ₽<br/>
+              📅 ${new Date(flight.departureAt).toLocaleDateString()}<br/>
+              ${flight.returnAt ? `🔄 Обратно: ${new Date(flight.returnAt).toLocaleDateString()}<br/>` : ""}
+              <a href="${escapeHtml(flight.bookingLink)}" target="_blank" rel="noopener noreferrer">Забронировать</a>
+            </div>
+          `,
+            )
+            .join("")
+        : "<div>Билеты не найдены</div>"
+    }-->
+  </div>
+`
 
     return `
       <div class="${styles.balloonContent}">
