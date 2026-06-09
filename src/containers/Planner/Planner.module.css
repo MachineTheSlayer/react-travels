@@ -1,0 +1,30 @@
+/* Planner адаптивность */
+@media (max-width: 768px) {
+  .plannerContainer {
+    padding: 16px;
+  }
+  
+  .ant-list-grid .ant-col {
+    width: 100% !important; /* карточки в одну колонку */
+  }
+  
+  .plannerFilters {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+  
+  .plannerFilters button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .plannerContainer {
+    padding: 12px;
+  }
+  
+  .ant-card {
+    margin-bottom: 12px;
+  }
+}

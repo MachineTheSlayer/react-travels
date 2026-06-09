@@ -8,6 +8,7 @@ type ImportMetaEnv = {
   readonly VITE_REACT_APP_FIREBASE_MESSAGING_SENDER_ID: string
   readonly VITE_REACT_APP_FIREBASE_APP_ID: string
   readonly VITE_REACT_YANDEX_API_KEY: string
+  readonly VITE_REACT_YANDEX_SUGGEST_API_KEY: string
 }
 
 type ImportMeta = {

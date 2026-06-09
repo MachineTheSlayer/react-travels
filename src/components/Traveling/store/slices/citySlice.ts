@@ -77,9 +77,11 @@ export const getSuggestions = createAsyncThunk(
       // Обработка двух возможных форматов ответа
       if (Array.isArray(result)) {
         suggestions = result
-      }
-       
-      else if (result && "results" in result && Array.isArray(result.results)) {
+      } else if (
+        result &&
+        "results" in result &&
+        Array.isArray(result.results)
+      ) {
         suggestions = result.results
       }
 
@@ -110,7 +112,7 @@ export const getCoordinatesForSuggestion = createAsyncThunk(
       })
 
       const firstGeoObject = result.geoObjects.get(0)
-       
+
       if (!firstGeoObject) return null
 
       const localities = firstGeoObject.getLocalities()
@@ -332,6 +334,14 @@ const citySlice = createSlice({
         city.iata = iata
       }
     },
+    updateCity: (state, action: PayloadAction<CityData>) => {
+      const index = state.savedCities.findIndex(
+        city => city.id === action.payload.id,
+      )
+      if (index !== -1) {
+        state.savedCities[index] = action.payload
+      }
+    },
   },
   extraReducers: builder => {
     builder
@@ -398,6 +408,7 @@ export const {
   clearSuggestions,
   setSavedCities,
   updateCityIata,
+  updateCity,
 } = citySlice.actions
 
 export default citySlice.reducer

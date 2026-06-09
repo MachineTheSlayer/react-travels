@@ -1,3 +1,4 @@
+ 
 import { Layout } from "antd"
 import { Content, Footer } from "antd/es/layout/layout"
 import AppHeader from "../../components/Traveling/components/AppHeader"
@@ -8,9 +9,12 @@ import { GithubOutlined } from "@ant-design/icons"
 import { useAppDispatch, useAppSelector, useTheme } from "../../app/hooks"
 import { ThemeProvider } from "../../providers/ThemeProvider"
 import {
+  fetchFlightsByRoute,
   fetchWeatherForCity,
+  getIataForCity,
   refreshOutdatedWeather,
   setSavedCities,
+  updateCityIata,
 } from "../../components/Traveling/store/slices/citySlice"
 import { useSelector } from "react-redux"
 import type { RootState } from "../../app/store"
@@ -39,16 +43,37 @@ const HomePage: React.FC<HomePage> = ({ children }) => {
       try {
         const cities = JSON.parse(stored) as CityData[]
         dispatch(setSavedCities(cities))
-        cities.forEach((city: CityData) => {
-          if (!city.weather) {
-            void dispatch(
-              fetchWeatherForCity({
-                coordinates: city.coordinates,
-                cityName: city.name,
-              }),
-            )
+        // Используем async IIFE или Promise.all для асинхронных операций
+        const processCities = async () => {
+          for (const city of cities) {
+            if (!city.weather) {
+              void dispatch(
+                fetchWeatherForCity({
+                  coordinates: city.coordinates,
+                  cityName: city.name,
+                }),
+              )
+            }
+
+            let iata: string | undefined = city.iata
+            if (!iata) {
+              const fetchedIata = await getIataForCity(city.name)
+              iata = fetchedIata ?? undefined
+              if (iata) {
+                dispatch(updateCityIata({ cityName: city.name, iata }))
+              }
+            }
+            if (iata) {
+              void dispatch(
+                fetchFlightsByRoute({
+                  originIata: "KUF",
+                  destinationIata: iata,
+                }),
+              )
+            }
           }
-        })
+        }
+        void processCities()
       } catch (e) {
         console.error("Failed to parse saved cities", e)
       }
@@ -107,7 +132,7 @@ const HomePage: React.FC<HomePage> = ({ children }) => {
   }, []);
  */
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout className={isDark ? "dark" : ""} style={{ minHeight: "100vh" }}>
       <ThemeProvider>
         <AppHeader />
         <Content>
@@ -123,7 +148,20 @@ const HomePage: React.FC<HomePage> = ({ children }) => {
             color: isDark ? "#ffffff" : "#000000",
           }}
         >
-          <GithubOutlined style={{ fontSize: "20px" }} />
+          <a
+            href="https://github.com/MachineTheSlayer"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: "inherit",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <GithubOutlined style={{ fontSize: "20px" }} />
+            By Danila Tsybikov 2026
+          </a>
         </Footer>
       </ThemeProvider>
     </Layout>

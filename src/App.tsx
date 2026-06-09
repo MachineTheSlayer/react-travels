@@ -5,6 +5,7 @@ import RegisterPage from "./containers/RegisterPage"
 import ForgotPasswordPage from "./containers/ForgotPasswordPage"
 import ProtectedRoute from "./components/Traveling/components/ProtectedRoute"
 import AppInitializer from "./components/Traveling/components/Auth/AppInitializer"
+import Planner from "./containers/Planner"
 
 const App: React.FC = () => {
   return (
@@ -16,6 +17,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <HomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/planner"
+            element={
+              <ProtectedRoute>
+                <Planner />
               </ProtectedRoute>
             }
           />

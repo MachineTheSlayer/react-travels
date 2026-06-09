@@ -43,6 +43,16 @@ export type CityData = {
   rating?: number
   weather?: WeatherData
   weatherUpdatedAt?: number
+  iata?: string // IATA-код города (назначения)
+  cheapFlights?: {
+    price: number
+    airline: string
+    flightNumber: number
+    departureAt: string
+    returnAt?: string
+    bookingLink: string
+  }[]
+  flightsUpdatedAt?: number
 }
 
 export type SuggestionItem = {
@@ -265,5 +275,11 @@ declare global {
     ymaps: YandexMapsApi
     mapInstance?: YandexMapInstance
     removePlacemark: (cityName: string) => void
+    /** Хранилище placemark по названию города */
+    cityPlacemarks: Map<string, YandexPlacemark>
+    /** Показать поле ввода города вылета */
+    showFlightInput: (cityName: string) => void
+    /** Найти билеты по указанным городам (вылет из формы) */
+    searchFlights: (cityName: string) => Promise<void>
   }
 }
