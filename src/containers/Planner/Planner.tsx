@@ -12,7 +12,6 @@ import {
   List,
   Space,
   Typography,
-  Tag,
   Tooltip,
   Modal,
   Form,
@@ -22,15 +21,10 @@ import {
   Select,
   message,
 } from "antd"
-import {
-  ArrowLeftOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  HomeOutlined,
-} from "@ant-design/icons"
+import { DeleteOutlined, EditOutlined, HomeOutlined } from "@ant-design/icons"
 import dayjs from "dayjs"
 
-const { Title, Text } = Typography
+const { Title } = Typography
 const { RangePicker } = DatePicker
 
 const Planner: React.FC = () => {

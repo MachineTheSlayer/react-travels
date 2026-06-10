@@ -380,7 +380,7 @@ const citySlice = createSlice({
           city.weatherUpdatedAt = updatedAt
         }
       })
-      .addCase(fetchWeatherForCity.rejected, (state, action) => {
+      .addCase(fetchWeatherForCity.rejected, (_state, action) => {
         console.error(
           `Failed to fetch weather for ${action.meta.arg.cityName}:`,
           action.error,

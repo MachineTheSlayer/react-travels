@@ -14,7 +14,6 @@ import {
   DatePicker,
   Drawer,
   Dropdown,
-  Flex,
   Form,
   Input,
   Mentions,
@@ -23,7 +22,6 @@ import {
   Modal,
   Radio,
   Rate,
-  Select,
   Space,
   Tag,
   Tooltip,
@@ -38,25 +36,16 @@ import type {
   GetProps,
   MenuProps,
   RadioChangeEvent,
-  UploadFile,
   UploadProps,
 } from "antd"
 import { createStyles } from "antd-style"
 import {
   UserOutlined,
   LogoutOutlined,
-  HeartOutlined,
-  ShareAltOutlined,
-  EditOutlined,
-  AudioOutlined,
   EnvironmentOutlined,
   PushpinOutlined,
   DeleteOutlined,
-  SaveOutlined,
   LoadingOutlined,
-  SunOutlined,
-  MoonOutlined,
-  PlusOutlined,
   UploadOutlined,
 } from "@ant-design/icons"
 import {
@@ -64,8 +53,6 @@ import {
   selectCity,
   saveCityToMap,
   clearSelectedCity,
-  removeFromHistory,
-  clearHistory,
   getSuggestions,
   getCoordinatesForSuggestion,
   clearSuggestions,
@@ -83,8 +70,6 @@ import {
 import ThemeSwitcher from "../ThemeSwitcher/ThemeSwitcher"
 import { cacheUser } from "../../../../utils/cacheStorage"
 
-type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0]
-
 export interface IHeaderProps {
   // key: string; // Note: key is usually a special prop in React lists, consider renaming to id or similar if it's a regular prop
   // value: string;
@@ -100,16 +85,7 @@ export interface IHeaderProps {
   description?: string;
 } */
 
-interface SuggestionItem {
-  value: string
-  text: string
-  coordinates: [number, number]
-  fullAddress: string
-}
-
 type MenuItem = Required<MenuProps>["items"][number]
-
-type SearchProps = GetProps<typeof Input.Search>
 
 const { RangePicker } = DatePicker
 
@@ -145,21 +121,16 @@ const stylesCard: CardProps["styles"] = {
   },
 }
 
-const { Search } = Input
-
 const AppHeader: React.FC<IHeaderProps> = () => {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const { isDark } = useTheme()
-  const [selectedSuggestion, setSelectedSuggestion] =
-    useState<YandexSuggestion | null>(null)
   const { user } = useSelector((state: RootState) => state.auth)
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState(null)
   const [showModalProfile, setShowModalProfile] = useState<boolean>(false)
   const { styles: classNames } = useStyles()
   const [form] = Form.useForm()
-  // const [suggestions, setSuggestions] = useState<YandexSuggestion[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     user?.photoURL || null,
   )
@@ -175,12 +146,6 @@ const AppHeader: React.FC<IHeaderProps> = () => {
       document.body.classList.remove("dark")
     }
   }, [isDark])
-
-  const handleCancel = () => {
-    setPreviewUrl(user?.photoURL || null) // возвращаем исходное
-    setIsHovered(false)
-    setShowModalProfile(false)
-  }
 
   const beforeUpload = (file: File) => {
     selectedFileRef.current = file
@@ -278,13 +243,10 @@ const AppHeader: React.FC<IHeaderProps> = () => {
 
   const {
     searchValue,
-    // suggestions,
     suggestResults,
     isLoading,
     isSuggestLoading,
     selectedCity,
-    searchHistory,
-    savedCities,
   } = useAppSelector(state => state.city)
 
   const { isApiLoaded } = useAppSelector(state => state.map)
@@ -297,23 +259,23 @@ const AppHeader: React.FC<IHeaderProps> = () => {
 
   // Логируем состояние при монтировании и обновлении
   useEffect(() => {
-    console.log("🏪 CityDrawer: Состояние Redux")
+    /* console.log("🏪 CityDrawer: Состояние Redux")
     console.log("  - ymapsInstance:", !!ymapsInstance)
     console.log("  - isApiLoaded:", isApiLoaded)
-    console.log("  - ymapsInstance.suggest:", !!ymapsInstance?.suggest)
+    console.log("  - ymapsInstance.suggest:", !!ymapsInstance?.suggest) */
 
     if (ymapsInstance) {
-      console.log(
+      /* console.log(
         "  - Доступные методы ymapsInstance:",
         Object.keys(ymapsInstance),
-      )
+      ) */
     }
   }, [ymapsInstance, isApiLoaded])
 
   // Обработчик поиска с Яндекс Suggest
   const handleSearch = useCallback(
     (value: string) => {
-      console.log("🔍 handleSearch вызван с value:", value)
+      // console.log("🔍 handleSearch вызван с value:", value)
       dispatch(setSearchValue(value))
       // Проверяем наличие ymapsInstance
       if (!ymapsInstance) {
@@ -336,7 +298,7 @@ const AppHeader: React.FC<IHeaderProps> = () => {
 
       if (!isApiLoaded) {
         console.warn("⚠️ API еще не загружен (isApiLoaded = false)")
-        // setSuggestions([]);
+
         return
       }
 
@@ -348,11 +310,11 @@ const AppHeader: React.FC<IHeaderProps> = () => {
   // Обработчик выбора подсказки
   const handleSelect = useCallback(
     async (value: string) => {
-      console.log("🔍 handleSelect вызван, value:", value)
-      console.log("🔍 suggestResults:", suggestResults)
+      /* console.log("🔍 handleSelect вызван, value:", value)
+      console.log("🔍 suggestResults:", suggestResults) */
       const suggestion = suggestResults.find(s => s.value === value)
-      console.log("🔍 найденная подсказка:", suggestion)
-      console.log("render suggestResults length:", suggestResults?.length)
+      /* console.log("🔍 найденная подсказка:", suggestion)
+      console.log("render suggestResults length:", suggestResults?.length) */
 
       if (suggestion && ymapsInstance) {
         const result = await dispatch(
@@ -377,19 +339,6 @@ const AppHeader: React.FC<IHeaderProps> = () => {
     },
     [dispatch, ymapsInstance, suggestResults],
   )
-
-  // Обработчик выбора из геокодера (на случай, если suggest не сработает)
-  /* const handleGeocodeSelect = useCallback((value: string) => {
-    const selected = suggestions.find(s => s.value === value);
-    if (selected) {
-      dispatch(selectCity({
-        name: selected.value,
-        coordinates: selected.coordinates,
-        fullAddress: selected.fullAddress
-      }));
-      message.success(`Выбран город: ${selected.value}`);
-    }
-  }, [dispatch, suggestions]); */
 
   // Обработчик сохранения на карту
   const handleSaveToMap = () => {
@@ -427,18 +376,6 @@ const AppHeader: React.FC<IHeaderProps> = () => {
         cityName: fullCityData.name,
       }),
     )
-  }
-
-  // Выбор города из истории
-  const handleHistorySelect = (city: SearchHistoryItem) => {
-    dispatch(selectCity(city))
-    message.success(`Загружен из истории: ${city.name}`)
-  }
-
-  // Выбор города из сохраненных
-  const handleSavedCitySelect = (city: SearchHistoryItem) => {
-    dispatch(selectCity(city))
-    message.success(`Выбран город: ${city.name}`)
   }
 
   // Очистка выбора
@@ -486,34 +423,6 @@ const AppHeader: React.FC<IHeaderProps> = () => {
     )
   }
 
-  /* const url = "https://whitelabel.travel.yandex-net.ru/hotels/suggest/?query=екатерин&region_limit=5&hotel_limit=10&affiliate_clid=y0__xDtwaOlAhiL0iEg9rj5yRbpaCnNTGS51On11zcVWtXqg9yzuA"
-
-    useEffect(() => {
-        (async() => {
-            const response = await getApiHotels(url)
-            console.log(response)
-            setSearchHotels(response)
-        })()
-    },[]) */
-
-  /* useEffect(() => {
-        (async() => {
-            const response = await getApiResource()
-            console.log(response)
-            setSearchId(response)
-        })()
-    },[]) */
-
-  /* useEffect(() => {
-        fetch("https://cors-anywhere.herokuapp.com/https://api.travelpayouts.com/aviasales/v3/prices_for_dates?origin=KUF&destination=MOW&departure_at=2026-06&return_at=2026-06&unique=false&sorting=price&direct=false&currency=rub&limit=30&page=1&one_way=true&token=09a4123fda29bbe35c02e12c275469b6")
-            .then((res)=> res.json())
-            .then((res)=> {
-                console.log(res)
-                setSearchId(res)
-            })
-            .catch((e)=> console.log(e))
-    },[]) */
-
   const onChange = (e: RadioChangeEvent) => {
     setValue(e.target.value)
     form.resetFields()
@@ -521,11 +430,6 @@ const AppHeader: React.FC<IHeaderProps> = () => {
 
   const sharedCardProps: CardProps = {
     classNames,
-  }
-
-  const sharedCardMetaProps: CardMetaProps = {
-    avatar: <Avatar src="https://api.dicebear.com/7.x/miniavs/svg?seed=1" />,
-    description: "This is the description",
   }
 
   const handleLogout = async () => {
@@ -707,7 +611,7 @@ const AppHeader: React.FC<IHeaderProps> = () => {
                                 : "Ничего не найдено"
                             }
                             style={{ width: 250 }}
-                            getPopupContainer={triggerNode => document.body}
+                            getPopupContainer={() => document.body}
                           >
                             {suggestResults?.map((suggestion, index) => (
                               <Option

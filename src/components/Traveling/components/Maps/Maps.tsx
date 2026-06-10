@@ -3,11 +3,7 @@ import type React from "react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useAppDispatch, useAppSelector } from "../../../../app/hooks"
 import { setApiLoaded } from "../../store/slices/mapSlice"
-import {
-  fetchFlightsByRoute,
-  getIataForCity,
-  removeCityFromMap,
-} from "../../store/slices/citySlice"
+import { removeCityFromMap } from "../../store/slices/citySlice"
 import {
   CityData,
   YandexMapsApi,

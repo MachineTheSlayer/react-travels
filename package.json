@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://machinetheslayer.github.io/react-travels",
   "scripts": {
     "build": "tsc -b && vite build",
     "dev": "vite",
@@ -14,7 +15,9 @@
     "start": "vite",
     "test": "vitest --run",
     "type-check": "tsc -b --noEmit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@iminside/react-yandex-maps": "^1.2.7",
@@ -46,6 +49,7 @@
     "eslint-plugin-prettier": "^5.2.6",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
+    "gh-pages": "^6.3.0",
     "globals": "^16.0.0",
     "jsdom": "^26.0.0",
     "lint-staged": "^16.2.7",

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Перенаправление...</title>
+  <script>
+    var redirectPath = window.location.pathname + window.location.search + window.location.hash;
+    var basePath = '/react-travels/';
+    if (redirectPath.startsWith(basePath)) {
+      redirectPath = redirectPath.substring(basePath.length - 1);
+      if (redirectPath === '') redirectPath = '/';
+    }
+    sessionStorage.setItem('redirectPath', redirectPath);
+    window.location.replace('./');
+  </script>
+</head>
+<body>
+  <noscript><meta http-equiv="refresh" content="0; url=./"></noscript>
+</body>
+</html>

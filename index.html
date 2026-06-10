@@ -10,5 +10,16 @@
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <script>
+      (function() {
+        var redirectPath = sessionStorage.getItem('redirectPath');
+        if (redirectPath && redirectPath !== '/' && window.location.pathname === '/react-travels/') {
+          sessionStorage.removeItem('redirectPath');
+          window.history.replaceState(null, '', redirectPath);
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        }
+      })();
+    </script>
   </body>
 </html>
