@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>React Travels</title>
+    <script type="module" crossorigin src="/react-travels/assets/index-DRiZB-dY.js"></script>
+    <link rel="stylesheet" crossorigin href="/react-travels/assets/index-DVAhI7Dd.css">
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+
+    <script>
+      (function() {
+        var redirectPath = sessionStorage.getItem('redirectPath');
+        if (redirectPath && redirectPath !== '/' && window.location.pathname === '/react-travels/') {
+          sessionStorage.removeItem('redirectPath');
+          window.history.replaceState(null, '', redirectPath);
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        }
+      })();
+    </script>
+  </body>
+</html>
