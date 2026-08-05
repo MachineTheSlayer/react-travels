@@ -234,68 +234,75 @@ const Maps: React.FC = () => {
     if (mapInstanceRef.current) return
 
     const ymaps = window.ymaps as YandexMapsApi
+    if (!ymaps) return
 
-    const map = new ymaps.Map(container, {
-      center: userLocation ?? [55.751574, 37.573856],
-      zoom: userLocation ? 10 : 2.5,
-      controls: [
-        "zoomControl",
-        "geolocationControl",
-        "searchControl",
-        "rulerControl",
-        "fullscreenControl",
-        "typeSelector",
-        "trafficControl",
-        "routeButtonControl",
-      ],
-    }) as unknown as YandexMapInstance
+    ymaps.ready(() => {
+      if (!mapContainerRef.current || mapInstanceRef.current) return
 
-    const style = document.createElement("style")
-    style.textContent = `
+      const map = new ymaps.Map(container, {
+        center: userLocation ?? [55.751574, 37.573856],
+        zoom: userLocation ? 10 : 2.5,
+        controls: [
+          "zoomControl",
+          "geolocationControl",
+          "searchControl",
+          "rulerControl",
+          "fullscreenControl",
+          "typeSelector",
+          "trafficControl",
+          "routeButtonControl",
+        ],
+      }) as unknown as YandexMapInstance
+
+      const style = document.createElement("style")
+      style.textContent = `
       [class*="balloon__layout"],
       [class*="balloon__panel"] {
         border-radius: 25px !important;
         overflow: hidden !important;
       }
     `
-    document.head.appendChild(style)
+      document.head.appendChild(style)
 
-    map.behaviors.disable("scrollZoom")
-    mapInstanceRef.current = map
-    window.mapInstance = map
-    dispatch(setApiLoaded(true))
-    setIsMapReady(true)
+      map.behaviors.disable("scrollZoom")
+      mapInstanceRef.current = map
+      window.mapInstance = map
+      dispatch(setApiLoaded(true))
+      setIsMapReady(true)
 
-    // Добавляем метки (если savedCities уже загружены)
-    // Если уже есть сохранённые города – добавляем метки
-    if (savedCities.length > 0) {
-      updatePlacemarks()
-    }
+      // Добавляем метки (если savedCities уже загружены)
+      // Если уже есть сохранённые города – добавляем метки
+      if (savedCities.length > 0) {
+        updatePlacemarks()
+      }
 
-    // Обработчик клика – используем IIFE, чтобы избежать возврата Promise
-    map.events.add("click", (e: unknown) => {
-      const event = e as { get: (key: string) => [number, number] }
-      const coords = event.get("coords")
-      void (async () => {
-        try {
-          const result = (await ymaps.geocode(
-            coords,
-          )) as unknown as YandexGeoCollection
-          const firstGeoObject = result.geoObjects.get(0)
-          const geo = firstGeoObject as {
-            getLocalities?: () => string[]
-            getAddressLine?: () => string
+      // Обработчик клика – используем IIFE, чтобы избежать возврата Promise
+      map.events.add("click", (e: unknown) => {
+        const event = e as { get: (key: string) => [number, number] }
+        const coords = event.get("coords")
+        void (async () => {
+          try {
+            const result = (await ymaps.geocode(
+              coords,
+            )) as unknown as YandexGeoCollection
+            const firstGeoObject = result.geoObjects.get(0)
+            const geo = firstGeoObject as {
+              getLocalities?: () => string[]
+              getAddressLine?: () => string
+            }
+
+            const city =
+              geo.getLocalities?.()?.[0] ??
+              geo.getAddressLine?.() ??
+              "Неизвестно"
+            console.log(`Клик: ${city}`)
+          } catch (err) {
+            console.error(err)
           }
-
-          const city =
-            geo.getLocalities?.()?.[0] ?? geo.getAddressLine?.() ?? "Неизвестно"
-          console.log(`Клик: ${city}`)
-        } catch (err) {
-          console.error(err)
-        }
-      })()
+        })()
+      })
     })
-  }, [dispatch, userLocation, updatePlacemarks])
+  }, [dispatch, savedCities, userLocation, updatePlacemarks])
 
   // ВАЖНО: эффект для обновления меток при изменении savedCities
   useEffect(() => {
