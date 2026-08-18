@@ -186,7 +186,8 @@ export const getIataForCity = async (
   try {
     let cache = citiesCache
     if (!cache) {
-      const response = await fetch("/cities.json")
+      const baseUrl = import.meta.env.BASE_URL || "/"
+      const response = await fetch(`${baseUrl}cities.json`)
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = (await response.json()) as Array<{
         name: string
