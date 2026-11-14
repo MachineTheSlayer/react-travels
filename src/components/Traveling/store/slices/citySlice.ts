@@ -343,6 +343,20 @@ const citySlice = createSlice({
         state.savedCities[index] = action.payload
       }
     },
+    updateTripStatuses: state => {
+      const now = new Date()
+      state.savedCities = state.savedCities.map(city => {
+        if (city.tripType === "past" || !city.dateRange || !city.dateRange[1]) {
+          return city
+        }
+        const endDate = new Date(city.dateRange[1])
+        const isPast = endDate < now
+        if (isPast) {
+          return { ...city, tripType: "past" }
+        }
+        return city
+      })
+    },
   },
   extraReducers: builder => {
     builder
@@ -410,6 +424,7 @@ export const {
   setSavedCities,
   updateCityIata,
   updateCity,
+  updateTripStatuses,
 } = citySlice.actions
 
 export default citySlice.reducer

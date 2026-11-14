@@ -1,30 +1,165 @@
-/* Planner адаптивность */
+/* Общий контейнер */
+.container {
+  padding: 24px;
+  
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #f5f5f5;
+  color: #000;
+  transition: background 0.3s, color 0.3s;
+}
+
+:global(body.dark) .container {
+  background: #141414;
+  color: #fff;
+}
+
+/* Шапка */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.title {
+  margin: 0 !important;
+}
+
+/* Фильтры */
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.btnPlanned {
+  background: #52c41a !important;
+  border-color: #52c41a !important;
+  color: #fff !important;
+}
+
+.btnPast {
+  background: #ff4d4f !important;
+  border-color: #ff4d4f !important;
+  color: #fff !important;
+}
+
+/* ─────────────────────────────────────────────── */
+/* Одинаковая высота карточек в ряду */
+/* ─────────────────────────────────────────────── */
+.listItem {
+  display: flex;
+  height: 100%;
+}
+
+.card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+}
+
+/* Тело карточки растягиваем, чтобы низ был ровным */
+.card :global(.ant-card-body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+:global(body.dark) .card {
+  background: #1f1f1f;
+  border-color: #303030;
+}
+
+:global(body.dark) .card :global(.ant-card-head) {
+  background: #1f1f1f;
+  border-color: #303030;
+  color: #fff;
+}
+
+:global(body.dark) .card :global(.ant-typography) {
+  color: #e0e0e0;
+}
+
+:global(body.dark) .card :global(.ant-typography-secondary) {
+  color: #a0a0a0;
+}
+
+/* Заголовок карточки — обрезка в одну строку с многоточием */
+.cardTitle {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  font-weight: bold;
+}
+
+/* Тело карточки */
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Каждая строка — флекс с обрезкой */
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0; /* важно для корректной работы ellipsis внутри flex */
+}
+
+/* Обрезка текста в одну строку */
+.ellipsis {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+/* ─────────────────────────────────────────────── */
+/* Адаптивность */
+/* ─────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .plannerContainer {
+  .container {
     padding: 16px;
   }
-  
-  .ant-list-grid .ant-col {
-    width: 100% !important; /* карточки в одну колонку */
+
+  .header {
+    gap: 12px;
   }
-  
-  .plannerFilters {
+
+  .title {
+    font-size: 20px !important;
+  }
+
+  .filters {
     flex-direction: column;
-    gap: 8px;
     align-items: stretch;
   }
-  
-  .plannerFilters button {
+
+  .filters button {
     width: 100%;
   }
 }
 
 @media (max-width: 480px) {
-  .plannerContainer {
+  .container {
     padding: 12px;
   }
-  
-  .ant-card {
-    margin-bottom: 12px;
+
+  .title {
+    font-size: 18px !important;
   }
 }

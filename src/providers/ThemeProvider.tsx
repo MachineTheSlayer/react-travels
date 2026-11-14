@@ -1,29 +1,18 @@
-import type React from "react";
-import { useMemo } from "react"
+import type React from "react"
+import { useEffect, useMemo } from "react"
 import { ConfigProvider, theme as antdTheme } from "antd"
 import { useAppSelector } from "../app/hooks"
 
-// Светлая тема
-const lightTheme = {
+const getThemeConfig = (mode: "light" | "dark") => ({
   token: {
-    colorPrimary: "#1890ff",
-    colorBgBase: "#ffffff",
-    colorTextBase: "#000000",
+    colorPrimary: mode === "dark" ? "#177ddc" : "#1890ff",
+    colorBgBase: mode === "dark" ? "#141414" : "#ffffff",
+    colorTextBase: mode === "dark" ? "#ffffff" : "#000000",
     borderRadius: 6,
   },
-  algorithm: antdTheme.defaultAlgorithm,
-}
-
-// Темная тема
-const darkTheme = {
-  token: {
-    colorPrimary: "#177ddc",
-    colorBgBase: "#141414",
-    colorTextBase: "#ffffff",
-    borderRadius: 6,
-  },
-  algorithm: antdTheme.darkAlgorithm,
-}
+  algorithm:
+    mode === "dark" ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+})
 
 type ThemeProviderProps = {
   children: React.ReactNode
@@ -32,8 +21,12 @@ type ThemeProviderProps = {
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const themeMode = useAppSelector(state => state.theme.mode)
 
-  const themeConfig = useMemo(() => {
-    return themeMode === "light" ? lightTheme : darkTheme
+  const themeConfig = useMemo(() => getThemeConfig(themeMode), [themeMode])
+
+  useEffect(() => {
+    const isDark = themeMode === "dark"
+    document.body.classList.toggle("dark", isDark)
+    document.documentElement.style.colorScheme = isDark ? "dark" : "light"
   }, [themeMode])
 
   return <ConfigProvider theme={themeConfig}>{children}</ConfigProvider>

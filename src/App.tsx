@@ -6,10 +6,11 @@ import ForgotPasswordPage from "./containers/ForgotPasswordPage"
 import ProtectedRoute from "./components/Traveling/components/ProtectedRoute"
 import AppInitializer from "./components/Traveling/components/Auth/AppInitializer"
 import Planner from "./containers/Planner"
+import { ThemeProvider } from "./providers/ThemeProvider"
 
 const App: React.FC = () => {
   return (
-    <div>
+    <ThemeProvider>
       <AppInitializer>
         <Routes>
           <Route
@@ -33,7 +34,7 @@ const App: React.FC = () => {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         </Routes>
       </AppInitializer>
-    </div>
+    </ThemeProvider>
   )
 }
 
