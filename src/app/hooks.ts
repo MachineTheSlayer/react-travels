@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import type { TypedUseSelectorHook } from "react-redux"
 import type { User as FirebaseUser } from "firebase/auth"
@@ -80,4 +80,15 @@ export const useTheme = () => {
     toggleTheme: () => dispatch(toggleTheme()),
     setTheme: (newMode: ThemeMode) => dispatch(setTheme(newMode)),
   }
+}
+
+export const useMediaQuery = (query: string): boolean => {
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
+  useEffect(() => {
+    const mql = window.matchMedia(query)
+    const listener = (e: MediaQueryListEvent) => { setMatches(e.matches); }
+    mql.addEventListener("change", listener)
+    return () => { mql.removeEventListener("change", listener); }
+  }, [query])
+  return matches
 }
