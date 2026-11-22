@@ -56,6 +56,7 @@ export const AddTripDrawer: React.FC<AddTripDrawerProps> = ({
   const dispatch = useAppDispatch()
   const [form] = Form.useForm<TripFormValues>()
   const [tripType, setTripType] = useState<1 | 2>(1)
+  const [autoCompleteOpen, setAutoCompleteOpen] = useState(false)
 
   const {
     searchValue,
@@ -66,13 +67,17 @@ export const AddTripDrawer: React.FC<AddTripDrawerProps> = ({
   } = useAppSelector(state => state.city)
   const { isApiLoaded } = useAppSelector(state => state.map)
 
+  const hasQuery = searchValue.trim().length > 0
+
   // ✅ При закрытии сбрасываем форму и выбранный город
   useEffect(() => {
     if (!open) {
       form.resetFields()
       dispatch(clearSelectedCity())
       dispatch(clearSuggestions())
+      dispatch(setSearchValue(""))
       setTripType(1)
+      setAutoCompleteOpen(false)
     }
   }, [open, form, dispatch])
 
@@ -84,6 +89,14 @@ export const AddTripDrawer: React.FC<AddTripDrawerProps> = ({
       void dispatch(getSuggestions({ query: value, ymaps }))
     },
     [dispatch, isApiLoaded],
+  )
+
+  const handleSearchInternal = useCallback(
+    (value: string) => {
+      handleSearch(value)
+      if (value.trim()) setAutoCompleteOpen(true)
+    },
+    [handleSearch],
   )
 
   const handleSelect = useCallback(
@@ -223,9 +236,19 @@ export const AddTripDrawer: React.FC<AddTripDrawerProps> = ({
           rules={[{ required: true, message: "Введите город!" }]}
         >
           <AutoComplete
+            open={autoCompleteOpen && hasQuery}
             value={searchValue}
-            showSearch={{ onSearch: handleSearch }}
-            onSelect={value => void handleSelect(value)}
+            showSearch={{ onSearch: handleSearchInternal }}
+            onSelect={value => {
+              setAutoCompleteOpen(false)
+              void handleSelect(value)
+            }}
+            onFocus={() => {
+              if (hasQuery) setAutoCompleteOpen(true)
+            }}
+            onBlur={() => {
+              setAutoCompleteOpen(false)
+            }}
             placeholder="Введите название города"
             notFoundContent={
               isSuggestLoading ? "Поиск..." : "Ничего не найдено"
@@ -280,7 +303,9 @@ export const AddTripDrawer: React.FC<AddTripDrawerProps> = ({
         <Form.Item>
           <Button
             type="primary"
-            onClick={() => { handleSave(); }}
+            onClick={() => {
+              handleSave()
+            }}
             disabled={!selectedCity}
             loading={isLoading}
             block
